@@ -1,4 +1,5 @@
-import rabbitmq.Rabbit;
+import com.google.gson.Gson;
+import rabbitmq.RabbitRPCClient;
 import rmi.ComplextRMIObject;
 import rmi.RMIInterface;
 
@@ -6,6 +7,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+
+import static java.lang.System.exit;
 
 public class Main {
 
@@ -17,13 +20,8 @@ public class Main {
 
             Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
             RMIInterface rmi = (RMIInterface) reg.lookup("testRMI");
-            String testString = "Some String   mad   weird  thing  ";
-            String result = rmi.obtainString(testString);
-//            System.out.println("Using " + testString + " as input and output is : " + result);
-
-//            System.out.println("Creating a complex object");
             ComplextRMIObject cro = rmi.createWithId(12L);
-            System.out.println(cro.getId() + " " + cro.getName() + " " + cro.getPhone());
+            printComplextObj(cro);
 
 
         } catch (Exception e) {
@@ -38,11 +36,10 @@ public class Main {
         Date rabbitStart = new Date();
         System.out.println(rabbitStart.toString() + " : Rabbit Start");
         try {
-            Rabbit rabbitSend = new Rabbit("localhost", "admin", "admin", "admin", "testRXQueue");
-            String message = "Hello World!";
-            rabbitSend.sendMessage(message);
-            Rabbit rabbitRx = new Rabbit("localhost", "admin", "admin", "admin", "testRXQueue");
-            rabbitRx.receive();
+            RabbitRPCClient rabbitRPCClient = new RabbitRPCClient();
+            String response = rabbitRPCClient.call("Give me an Object");
+            ComplextRMIObject complextRMIObject = jsonStringToComplexObj(response);
+            printComplextObj(complextRMIObject);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,6 +48,8 @@ public class Main {
         System.out.println(rabbitEnd.toString() + " : Rabbit Finish");
         System.out.println("Total time to Run RabbitMq  : " + dateDiffMillSec(rabbitEnd, rabbitStart) + " ms");
         System.out.println("\n\n");
+
+        exit(1);
 
     }
 
@@ -61,5 +60,14 @@ public class Main {
             miliSeconds = miliSeconds * -1;
         }
         return miliSeconds;
+    }
+
+    public static ComplextRMIObject jsonStringToComplexObj(String json) {
+        Gson gson = new Gson();
+        return gson.fromJson(json, ComplextRMIObject.class);
+    }
+
+    public static void printComplextObj(ComplextRMIObject complextRMIObject) {
+        System.out.println(new Date().toString() + " : " + complextRMIObject.getId() + " " + complextRMIObject.getName() + " " + complextRMIObject.getPhone());
     }
 }
