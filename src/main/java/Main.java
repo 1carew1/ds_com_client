@@ -5,6 +5,8 @@ import rabbitmq.RabbitRPCClient;
 import rmi.ComplextRMIObject;
 import rmi.RMIInterface;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Date;
@@ -18,56 +20,65 @@ public class Main {
 
         //Rest Start
         Date restStart = new Date();
-//        System.out.println(restStart.toString() + " : Rest Start");
-        Client client = Client.create();
-        WebResource webResource = client.resource("http://localhost:4567/createComplexObj");
-        String jsonRestRequest = webResource.get(String.class);
-        ComplextRMIObject obj = jsonStringToComplexObj(jsonRestRequest);
-//        printComplextObj(obj);
+        try {
+            Client client = Client.create();
+            WebResource webResource = client.resource("http://localhost:8091/createComplexObj");
+            String jsonRestRequest = webResource.get(String.class);
+            ComplextRMIObject obj = jsonStringToComplexObj(jsonRestRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Date restEnd = new Date();
-//        System.out.println(restEnd.toString() + " : Rest Finish");
         System.out.println("Total time to Run Rest  : " + dateDiffMillSec(restEnd, restStart) + " ms");
-        System.out.println("\n\n");
+        System.out.println("");
         //Rest Stop
+
+
+        // File Read Start
+        Date fileStart = new Date();
+        String path = System.getProperty("user.home") + "/Desktop/obj.json";
+        try {
+            String fileJson = new String(Files.readAllBytes(Paths.get(path)));
+            ComplextRMIObject compObj = jsonStringToComplexObj(fileJson);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Date fileEnd = new Date();
+        System.out.println("Total time to Read File  : " + dateDiffMillSec(fileEnd, fileStart) + " ms");
+        System.out.println("");
+        // File read end
 
         //Java RMI Start
         Date rmiStart = new Date();
-//        System.out.println(rmiStart.toString() + " : RMI Start");
         try {
 
             Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
             RMIInterface rmi = (RMIInterface) reg.lookup("testRMI");
             ComplextRMIObject cro = rmi.createWithId(12L);
-//            printComplextObj(cro);
-
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         Date rmiEnd = new Date();
-//        System.out.println(rmiEnd.toString() + " : RMI Finish");
         System.out.println("Total time to Run RMI  : " + dateDiffMillSec(rmiEnd, rmiStart) + " ms");
-        System.out.println("\n\n");
+        System.out.println("");
         // Java RMI End
 
         // Rabbit RPC Start
         Date rabbitStart = new Date();
-//        System.out.println(rabbitStart.toString() + " : Rabbit Start");
         try {
             RabbitRPCClient rabbitRPCClient = new RabbitRPCClient();
             String response = rabbitRPCClient.call("Give me an Object");
             ComplextRMIObject complextRMIObject = jsonStringToComplexObj(response);
-//            printComplextObj(complextRMIObject);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         Date rabbitEnd = new Date();
-//        System.out.println(rabbitEnd.toString() + " : Rabbit Finish");
         System.out.println("Total time to Run RabbitMq  : " + dateDiffMillSec(rabbitEnd, rabbitStart) + " ms");
+        System.out.println("");
         //Rabbit RPC End
-
-        System.out.println("\n\n");
 
 
         exit(1);
