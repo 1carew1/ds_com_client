@@ -1,6 +1,11 @@
+import HelloApp.Hello;
+import HelloApp.HelloHelper;
 import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+import org.omg.CORBA.ORB;
+import org.omg.CosNaming.NamingContextExt;
+import org.omg.CosNaming.NamingContextExtHelper;
 import rabbitmq.RabbitRPCClient;
 import rmi.ComplextRMIObject;
 import rmi.RMIInterface;
@@ -17,7 +22,6 @@ import static java.lang.System.exit;
 public class Main {
 
     public static void main(String[] args) {
-
         //Rest Start
         Date restStart = new Date();
         try {
@@ -48,6 +52,27 @@ public class Main {
         System.out.println("Total time to Read File  : " + dateDiffMillSec(fileEnd, fileStart) + " ms");
         System.out.println("");
         // File read end
+
+        //Corba Start
+        Date corbaStart = new Date();
+
+        try {
+            ORB orb = ORB.init(args, null);
+            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+            NamingContextExt namingContextExt = NamingContextExtHelper.narrow(objRef);
+
+            Hello helloObj = (Hello) HelloHelper.narrow(namingContextExt.resolve_str("ABC"));
+            String corbaString = helloObj.hellomessage();
+            ComplextRMIObject compleObj = jsonStringToComplexObj(corbaString);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Date corbaEnd = new Date();
+        System.out.println("Total time to Run Corba  : " + dateDiffMillSec(corbaEnd, corbaStart) + " ms");
+        System.out.println("");
+        //Corba End
 
         //Java RMI Start
         Date rmiStart = new Date();

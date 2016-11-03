@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="openjms-0.7.7-beta-1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/openjms-0.7.7-beta-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjms-common-0.7.7-beta-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjms-net-0.7.7-beta-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjms-tools-0.7.7-beta-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/openjms-tunnel-0.7.7-beta-1.war!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
