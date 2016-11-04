@@ -10,6 +10,9 @@ import rabbitmq.RabbitRPCClient;
 import rmi.ComplextRMIObject;
 import rmi.RMIInterface;
 
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.registry.LocateRegistry;
@@ -28,18 +31,25 @@ public class Main {
     public static void main(String[] args) {
         //Rest Start
         Date restStart = new Date();
-        try {
+        try
+
+        {
             Client client = Client.create();
             WebResource webResource = client.resource("http://localhost:8091/createComplexObj");
             String jsonRestRequest = webResource.get(String.class);
             ComplextRMIObject obj = jsonStringToComplexObj(jsonRestRequest);
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
         }
+
         Date restEnd = new Date();
         Long restTimeDiffmS = dateDiffMillSec(restEnd, restStart);
         System.out.println("Total time to Run Rest  : " + restTimeDiffmS + " ms");
         System.out.println("");
+
         //Rest Stop
         writeResultsToDB("REST", restTimeDiffmS);
 
@@ -47,23 +57,32 @@ public class Main {
         // File Read Start
         Date fileStart = new Date();
         String path = System.getProperty("user.home") + "/Desktop/obj.json";
-        try {
+        try
+
+        {
             String fileJson = new String(Files.readAllBytes(Paths.get(path)));
             ComplextRMIObject compObj = jsonStringToComplexObj(fileJson);
 
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
         }
+
         Date fileEnd = new Date();
         Long fileTime = dateDiffMillSec(fileEnd, fileStart);
         System.out.println("Total time to Read File  : " + fileTime + " ms");
         System.out.println("");
+
         // File read end
         writeResultsToDB("FILE", fileTime);
 
         //Corba Start
         Date corbaStart = new Date();
-        try {
+        try
+
+        {
             ORB orb = ORB.init(args, null);
             org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
             NamingContextExt namingContextExt = NamingContextExtHelper.narrow(objRef);
@@ -72,7 +91,10 @@ public class Main {
             String corbaString = helloObj.hellomessage();
             ComplextRMIObject compleObj = jsonStringToComplexObj(corbaString);
 
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
         }
 
@@ -80,37 +102,51 @@ public class Main {
         Long corbaTime = dateDiffMillSec(corbaEnd, corbaStart);
         System.out.println("Total time to Run Corba  : " + corbaTime + " ms");
         System.out.println("");
+
         //Corba End
         writeResultsToDB("CORBA", corbaTime);
 
         //Java RMI Start
         Date rmiStart = new Date();
-        try {
+        try
+
+        {
 
             Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
             RMIInterface rmi = (RMIInterface) reg.lookup("testRMI");
             ComplextRMIObject cro = rmi.createWithId(12L);
 
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
         }
+
         Date rmiEnd = new Date();
         Long rmiTime = dateDiffMillSec(rmiEnd, rmiStart);
         System.out.println("Total time to Run RMI  : " + rmiTime + " ms");
         System.out.println("");
+
         // Java RMI End
         writeResultsToDB("RMI", rmiTime);
 
         // Rabbit RPC Start
         Date rabbitStart = new Date();
-        try {
+        try
+
+        {
             RabbitRPCClient rabbitRPCClient = new RabbitRPCClient();
             String response = rabbitRPCClient.call("Give me an Object");
             ComplextRMIObject complextRMIObject = jsonStringToComplexObj(response);
             rabbitRPCClient.close();
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
         }
+
         Date rabbitEnd = new Date();
         Long rabbitTime = dateDiffMillSec(rabbitEnd, rabbitStart);
         System.out.println("Total time to Run RabbitMq  : " + rabbitTime + " ms");
@@ -118,9 +154,40 @@ public class Main {
         //Rabbit RPC End
         writeResultsToDB("RABBITMQ", rabbitTime);
 
+
+        //Socket Start
+        Date socketStart = new Date();
+        Socket socket;
+        BufferedReader bufferedReader;
+        PrintStream printStream;
         try {
+            socket = new Socket("localhost", 1025);
+            bufferedReader = new BufferedReader(new InputStreamReader(
+                    socket.getInputStream()));
+            String socketString;
+            socketString = bufferedReader.readLine();
+            ComplextRMIObject obj = jsonStringToComplexObj(socketString);
+            bufferedReader.close();
+            socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Date socketEnd = new Date();
+        Long socketTime = dateDiffMillSec(socketEnd, socketStart);
+        System.out.println("Total time to Run Sockets  : " + socketTime + " ms");
+        System.out.println("");
+        //Socket End
+        writeResultsToDB("SOCKET", socketTime);
+
+
+        try
+
+        {
             Thread.sleep(2000);
-        } catch (InterruptedException e) {
+        } catch (
+                InterruptedException e)
+
+        {
             e.printStackTrace();
         }
 
