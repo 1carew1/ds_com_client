@@ -27,168 +27,183 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.System.exit;
 
 public class Main {
+    private static final boolean looping = true;
 
     public static void main(String[] args) {
-        //Rest Start
-        Date restStart = new Date();
-        try
-
-        {
-            Client client = Client.create();
-            WebResource webResource = client.resource("http://localhost:8091/createComplexObj");
-            String jsonRestRequest = webResource.get(String.class);
-            ComplextRMIObject obj = jsonStringToComplexObj(jsonRestRequest);
-        } catch (
-                Exception e)
-
-        {
-            e.printStackTrace();
+        int numberOfRuns = 1;
+        if (looping) {
+            numberOfRuns = 500;
         }
-
-        Date restEnd = new Date();
-        Long restTimeDiffmS = dateDiffMillSec(restEnd, restStart);
-        System.out.println("Total time to Run Rest  : " + restTimeDiffmS + " ms");
-        System.out.println("");
-
-        //Rest Stop
-        writeResultsToDB("REST", restTimeDiffmS);
+        for (int i = 0; i < numberOfRuns; i++) {
 
 
-        // File Read Start
-        Date fileStart = new Date();
-        String path = System.getProperty("user.home") + "/Desktop/obj.json";
-        try
+            //Rest Start
+            Date restStart = new Date();
+            try
 
-        {
-            String fileJson = new String(Files.readAllBytes(Paths.get(path)));
-            ComplextRMIObject compObj = jsonStringToComplexObj(fileJson);
+            {
+                Client client = Client.create();
+                WebResource webResource = client.resource("http://localhost:8091/createComplexObj");
+                String jsonRestRequest = webResource.get(String.class);
+                ComplextRMIObject obj = jsonStringToComplexObj(jsonRestRequest);
+                printComplextObj(obj);
+            } catch (
+                    Exception e)
 
-        } catch (
-                Exception e)
+            {
+                e.printStackTrace();
+            }
 
-        {
-            e.printStackTrace();
-        }
+            Date restEnd = new Date();
+            Long restTimeDiffmS = dateDiffMillSec(restEnd, restStart);
+            System.out.println("Total time to Run Rest  : " + restTimeDiffmS + " ms");
+            System.out.println("");
 
-        Date fileEnd = new Date();
-        Long fileTime = dateDiffMillSec(fileEnd, fileStart);
-        System.out.println("Total time to Read File  : " + fileTime + " ms");
-        System.out.println("");
-
-        // File read end
-        writeResultsToDB("FILE", fileTime);
-
-        //Corba Start
-        Date corbaStart = new Date();
-        try
-
-        {
-            ORB orb = ORB.init(args, null);
-            org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
-            NamingContextExt namingContextExt = NamingContextExtHelper.narrow(objRef);
-
-            Hello helloObj = (Hello) HelloHelper.narrow(namingContextExt.resolve_str("ABC"));
-            String corbaString = helloObj.hellomessage();
-            ComplextRMIObject compleObj = jsonStringToComplexObj(corbaString);
-
-        } catch (
-                Exception e)
-
-        {
-            e.printStackTrace();
-        }
-
-        Date corbaEnd = new Date();
-        Long corbaTime = dateDiffMillSec(corbaEnd, corbaStart);
-        System.out.println("Total time to Run Corba  : " + corbaTime + " ms");
-        System.out.println("");
-
-        //Corba End
-        writeResultsToDB("CORBA", corbaTime);
-
-        //Java RMI Start
-        Date rmiStart = new Date();
-        try
-
-        {
-
-            Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
-            RMIInterface rmi = (RMIInterface) reg.lookup("testRMI");
-            ComplextRMIObject cro = rmi.createWithId(12L);
-
-        } catch (
-                Exception e)
-
-        {
-            e.printStackTrace();
-        }
-
-        Date rmiEnd = new Date();
-        Long rmiTime = dateDiffMillSec(rmiEnd, rmiStart);
-        System.out.println("Total time to Run RMI  : " + rmiTime + " ms");
-        System.out.println("");
-
-        // Java RMI End
-        writeResultsToDB("RMI", rmiTime);
-
-        // Rabbit RPC Start
-        Date rabbitStart = new Date();
-        try
-
-        {
-            RabbitRPCClient rabbitRPCClient = new RabbitRPCClient();
-            String response = rabbitRPCClient.call("Give me an Object");
-            ComplextRMIObject complextRMIObject = jsonStringToComplexObj(response);
-            rabbitRPCClient.close();
-        } catch (
-                Exception e)
-
-        {
-            e.printStackTrace();
-        }
-
-        Date rabbitEnd = new Date();
-        Long rabbitTime = dateDiffMillSec(rabbitEnd, rabbitStart);
-        System.out.println("Total time to Run RabbitMq  : " + rabbitTime + " ms");
-        System.out.println("");
-        //Rabbit RPC End
-        writeResultsToDB("RABBITMQ", rabbitTime);
+            //Rest Stop
+            writeResultsToDB("REST", restTimeDiffmS);
 
 
-        //Socket Start
-        Date socketStart = new Date();
-        Socket socket;
-        BufferedReader bufferedReader;
-        PrintStream printStream;
-        try {
-            socket = new Socket("localhost", 1025);
-            bufferedReader = new BufferedReader(new InputStreamReader(
-                    socket.getInputStream()));
-            String socketString;
-            socketString = bufferedReader.readLine();
-            ComplextRMIObject obj = jsonStringToComplexObj(socketString);
-            bufferedReader.close();
-            socket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Date socketEnd = new Date();
-        Long socketTime = dateDiffMillSec(socketEnd, socketStart);
-        System.out.println("Total time to Run Sockets  : " + socketTime + " ms");
-        System.out.println("");
-        //Socket End
-        writeResultsToDB("SOCKET", socketTime);
+            // File Read Start
+            Date fileStart = new Date();
+            String path = System.getProperty("user.home") + "/Desktop/obj.json";
+            try
+
+            {
+                String fileJson = new String(Files.readAllBytes(Paths.get(path)));
+                ComplextRMIObject compObj = jsonStringToComplexObj(fileJson);
+                printComplextObj(compObj);
+
+            } catch (
+                    Exception e)
+
+            {
+                e.printStackTrace();
+            }
+
+            Date fileEnd = new Date();
+            Long fileTime = dateDiffMillSec(fileEnd, fileStart);
+            System.out.println("Total time to Read File  : " + fileTime + " ms");
+            System.out.println("");
+
+            // File read end
+            writeResultsToDB("FILE", fileTime);
+
+            //Corba Start
+            Date corbaStart = new Date();
+            try
+
+            {
+                ORB orb = ORB.init(args, null);
+                org.omg.CORBA.Object objRef = orb.resolve_initial_references("NameService");
+                NamingContextExt namingContextExt = NamingContextExtHelper.narrow(objRef);
+
+                Hello helloObj = (Hello) HelloHelper.narrow(namingContextExt.resolve_str("ABC"));
+                String corbaString = helloObj.hellomessage();
+                ComplextRMIObject compleObj = jsonStringToComplexObj(corbaString);
+                printComplextObj(compleObj);
+
+            } catch (
+                    Exception e)
+
+            {
+                e.printStackTrace();
+            }
+
+            Date corbaEnd = new Date();
+            Long corbaTime = dateDiffMillSec(corbaEnd, corbaStart);
+            System.out.println("Total time to Run Corba  : " + corbaTime + " ms");
+            System.out.println("");
+
+            //Corba End
+            writeResultsToDB("CORBA", corbaTime);
+
+            //Java RMI Start
+            Date rmiStart = new Date();
+            try
+
+            {
+
+                Registry reg = LocateRegistry.getRegistry("127.0.0.1", 1099);
+                RMIInterface rmi = (RMIInterface) reg.lookup("testRMI");
+                ComplextRMIObject cro = rmi.createWithId(12L);
+                printComplextObj(cro);
+
+            } catch (
+                    Exception e)
+
+            {
+                e.printStackTrace();
+            }
+
+            Date rmiEnd = new Date();
+            Long rmiTime = dateDiffMillSec(rmiEnd, rmiStart);
+            System.out.println("Total time to Run RMI  : " + rmiTime + " ms");
+            System.out.println("");
+
+            // Java RMI End
+            writeResultsToDB("RMI", rmiTime);
+
+            // Rabbit RPC Start
+            Date rabbitStart = new Date();
+            try
+
+            {
+                RabbitRPCClient rabbitRPCClient = new RabbitRPCClient();
+                String response = rabbitRPCClient.call("Give me an Object");
+                ComplextRMIObject complextRMIObject = jsonStringToComplexObj(response);
+                rabbitRPCClient.close();
+                printComplextObj(complextRMIObject);
+            } catch (
+                    Exception e)
+
+            {
+                e.printStackTrace();
+            }
+
+            Date rabbitEnd = new Date();
+            Long rabbitTime = dateDiffMillSec(rabbitEnd, rabbitStart);
+            System.out.println("Total time to Run RabbitMq  : " + rabbitTime + " ms");
+            System.out.println("");
+            //Rabbit RPC End
+            writeResultsToDB("RABBITMQ", rabbitTime);
 
 
-        try
+            //Socket Start
+            Date socketStart = new Date();
+            Socket socket;
+            BufferedReader bufferedReader;
+            PrintStream printStream;
+            try {
+                socket = new Socket("localhost", 1025);
+                bufferedReader = new BufferedReader(new InputStreamReader(
+                        socket.getInputStream()));
+                String socketString;
+                socketString = bufferedReader.readLine();
+                ComplextRMIObject obj = jsonStringToComplexObj(socketString);
+                bufferedReader.close();
+                socket.close();
+                printComplextObj(obj);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Date socketEnd = new Date();
+            Long socketTime = dateDiffMillSec(socketEnd, socketStart);
+            System.out.println("Total time to Run Sockets  : " + socketTime + " ms");
+            System.out.println("");
+            //Socket End
+            writeResultsToDB("SOCKET", socketTime);
 
-        {
-            Thread.sleep(2000);
-        } catch (
-                InterruptedException e)
 
-        {
-            e.printStackTrace();
+            try
+
+            {
+                Thread.sleep(100);
+            } catch (
+                    InterruptedException e)
+
+            {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -208,7 +223,7 @@ public class Main {
     }
 
     public static void printComplextObj(ComplextRMIObject complextRMIObject) {
-        System.out.println(new Date().toString() + " : " + complextRMIObject.getId() + " " + complextRMIObject.getName() + " " + complextRMIObject.getPhone());
+//        System.out.println(new Date().toString() + " : " + complextRMIObject.getId() + " " + complextRMIObject.getName() + " " + complextRMIObject.getPhone());
     }
 
     public static void writeResultsToDB(String type, Long runtime) {
@@ -236,6 +251,11 @@ public class Main {
             String query = " insert into distributed.data_results(date, type, runtime)"
                     + " values (now(), ?, ?)";
 
+            if (looping) {
+                query = " insert into distributed.looped_data_results(date, type, runtime)"
+                        + " values (now(), ?, ?)";
+            }
+
 
             // create the mysql insert preparedstatement
             PreparedStatement preparedStmt = conn.prepareStatement(query);
@@ -252,3 +272,42 @@ public class Main {
 
     }
 }
+
+/*
+Query to get individual runs :
+
+SELECT
+    res.type type,
+    AVG(res.runtime) averageRuntime,
+    MAX(res.runtime) maxRunTime,
+    MIN(res.runtime) minRunTime,
+    COUNT(*) numberOfDataPoints
+FROM
+    distributed.data_results res
+GROUP BY res.type
+ORDER BY averageRuntime DESC;
+
+Median :
+SELECT @type := 'FILE';
+SELECT
+    AVG(t1.runtime) AS median_val, t1.type
+FROM
+    (SELECT
+        @rownum:=@rownum + 1 AS `row_number`, d.runtime, d.type
+    FROM
+        distributed.data_results d, (SELECT @rownum:=0) r
+    WHERE
+        1 AND d.type = @type
+    ORDER BY d.runtime) AS t1,
+    (SELECT
+        COUNT(*) AS total_rows
+    FROM
+        distributed.data_results d
+    WHERE
+        1 AND d.type = @type) AS t2
+WHERE
+    1
+        AND t1.row_number IN (FLOOR((total_rows + 1) / 2) , FLOOR((total_rows + 2) / 2))
+        AND t1.type = @type;
+
+ */
